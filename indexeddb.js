@@ -1,56 +1,60 @@
-_Intention.module('intention/indexeddb', function()
-{
+_Intention.module('intention/indexeddb', function() {
 	'use strict';
 
 	// Shortcuts to possibly prefixed objects. There are checks for unused prefixes, which were added anyway for completion sake
 	var indexedDB = (window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB || window.oIndexedDB),
-		IDBKeyRange = (window.IDBKeyRange || window.webkitIDBKeyRange || window.mozIDBKeyRange || window.msIDBKeyRange || window.oIDBKeyRange);
+		IDBKeyRange = (window.IDBKeyRange || window.webkitIDBKeyRange || window.mozIDBKeyRange || window.msIDBKeyRange || window.oIDBKeyRange),
+		_private = {
+			onerror:function(error) {
+				throw error;
+			},
 
-	if (!indexedDB) {
-		// Fuck off.
-		throw 'IndexedDB not supported';
-	}
+			setReady:function(that) {
+				that.ready = true;
 
-	var _private = {
-		onerror:function(error)
-		{
-			throw error;
-		},
+				this.callCue(that);
+			},
 
-		setReady:function(that)
-		{
-			that.ready = true;
+			callCue:function(that) {
+				var job, i;
+				for(i = 0; i < that.cue.length; i ++)
+				{
+					job = that.cue[i];
 
-			this.callCue(that);
-		},
+					that[job.func].apply(that, job.args);
+				}
 
-		callCue:function(that)
-		{
-			var job, i;
-			for(i = 0; i < that.cue.length; i ++)
-			{
-				job = that.cue[i];
+				return that;
+			},
 
-				that[job.func].apply(that, job.args);
+			sanitycheck:function(that, func, args) {
+				// If the database is not ready, put the request in the cue so it can be executed later
+				if (!that.ready) {
+					that.cue[that.cue.length] = {func:func, args:args};
+					return false;
+				}
+
+				return true;
 			}
+		};
 
-			return that;
-		},
-
-		sanitycheck:function(that, func, args)
-		{
-			// If the database is not ready, put the request in the cue so it can be executed later
-			if (!that.ready) {
-				that.cue[that.cue.length] = {func:func, args:args};
-				return false;
-			}
-
-			return true;
+	/**
+	 * Constructor function
+	 *
+	 * @method IndexedDB
+	 *
+	 * @depends IndexedDB (we actually need the native implementation before we can put our shell around it)
+	 *
+	 * @param {String} name, the name of the database
+	 * @param {Mixed} version, so the browser knows whether or not this thing is up to date
+	 * @param {Mixed} indices, so we can find stuff later on
+	 */
+	function IndexedDB(name, version, indices) {
+		if (!indexedDB || !IDBKeyRange) {
+			// Well... this is embarrassing
+			throw 'IndexedDB not supported';
 		}
-	};
 
-	function IndexedDB(name, version, indices)
-	{
 		this.db = null;
 		this.cue = [];
 
@@ -60,11 +64,9 @@ _Intention.module('intention/indexeddb', function()
 		// In case people want to define their own cursors;
 		this.IDBKeyRange = IDBKeyRange;
 
-		var that = this,
-			request = indexedDB.open(name, version);
+		var that = this, request = indexedDB.open(name, version);
 
-		request.onupgradeneeded = function indexedDB_Request_onupgradeneeded(e)
-		{
+		request.onupgradeneeded = function indexedDB_Request_onupgradeneeded(e) {
 			var db = e.target.result;
 
 			if (db.objectStoreNames.contains(this.name)) {
@@ -85,8 +87,7 @@ _Intention.module('intention/indexeddb', function()
 			that.db = db;
 		};
 
-		request.onsuccess = function indexedDB_Request_onsuccess(e)
-		{
+		request.onsuccess = function indexedDB_Request_onsuccess(e) {
 			that.db = e.target.result;
 			_private.setReady(that);
 		};
@@ -96,8 +97,15 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	}
 
-	IndexedDB.prototype.add = function IndexedDB_add(obj, callback)
-	{
+	/**
+	 * Add an object to the database,
+	 *
+	 * @method Add
+	 *
+	 * @param {Object} obj, The object to save
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.add = function IndexedDB_add(obj, callback) {
 		if (_private.sanitycheck(this, 'add', arguments)) {
 			var trans = this.db.transaction(this.name, 'readwrite'),
 				store = trans.objectStore(this.name),
@@ -110,12 +118,18 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.get = function IndexedDB_get(id, callback)
-	{
+	/**
+	 * Fetch an object from the database,
+	 *
+	 * @method Get
+	 *
+	 * @param {Mixed} id, The way we can recognize what we want
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.get = function IndexedDB_get(id, callback) {
 		if (_private.sanitycheck(this, 'get', arguments)) {
 			var request = this.db.transaction([this.name], 'readwrite').objectStore(this.name).get(id);
-			request.onsuccess = function(e)
-			{
+			request.onsuccess = function(e) {
 				callback(e);
 			};
 
@@ -125,8 +139,14 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.getAll = function IndexedDB_getAll(callback)
-	{
+	/**
+	 * Fetch all the objects from the database,
+	 *
+	 * @method GetAll
+	 *
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.getAll = function IndexedDB_getAll(callback) {
 		if (_private.sanitycheck(this, 'getAll', arguments)) {
 			this.findFrom(0, callback);
 		}
@@ -134,13 +154,19 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.count = function IndexedDB_count(index, callback)
-	{
+	/**
+	 * Count the objects in the database,
+	 *
+	 * @method Count
+	 *
+	 * @param {Mixed} index, The way we can recognize what we want
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.count = function IndexedDB_count(index, callback) {
 		if (_private.sanitycheck(this, 'count', arguments)) {
 			var store = this.db.transaction([this.name], 'readwrite').objectStore(this.name),
-				request = store.index('datetime');//.count();
-			request.onsuccess = function(e)
-			{
+				request = store.index('datetime');//.count(); // <--- WAIT, that ain't supposed to be like this, is it?
+			request.onsuccess = function(e) {
 				callback(e);
 			};
 
@@ -150,18 +176,32 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.findOnly = function IndexedDB_findOnly(key, callback)
-	{
+	/**
+	 * Find objects in the database,
+	 *
+	 * @method FindOnly
+	 *
+	 * @param {Mixed} key, The way we can recognize what we want
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.findOnly = function IndexedDB_findOnly(key, callback) {
 		var keyRange = IDBKeyRange.only(key);
 
 		return this.find(keyRange, callback);
 	};
 
-	IndexedDB.prototype.findFrom = function IndexedDB_findFrom(from, exclude, callback)
-	{
+	/**
+	 * Count the objects in the database,
+	 *
+	 * @method FindFrom
+	 *
+	 * @param {Mixed} From, from where we want what we want
+	 * @param {Mixed} Exclude, don't count these
+	 * @param {Function} callback, called when the job is done
+	 */
+	IndexedDB.prototype.findFrom = function IndexedDB_findFrom(from, exclude, callback) {
 		// Excludes are optional
-		if (typeof exclude === 'function') {
-			callback = exclude;
+		if (typeof exclude === 'function') {callback = exclude;
 			exclude = false;
 		}
 
@@ -170,11 +210,18 @@ _Intention.module('intention/indexeddb', function()
 		return this.find(keyRange, callback);
 	};
 
-	IndexedDB.prototype.findTill = function IndexedDB_findTill(till, exclude, callback)
-	{
+	/**
+	 * Count the objects in the database,
+	 *
+	 * @method FindTill
+	 *
+	 * @param {Mixed} Till, till where we want what we want
+	 * @param {Mixed} Exclude, don't count these
+	 * @param {Function} callback, called when the job is done
+	 */
+	IndexedDB.prototype.findTill = function IndexedDB_findTill(till, exclude, callback) {
 		// Excludes are optional
-		if (typeof exclude === 'function') {
-			callback = exclude;
+		if (typeof exclude === 'function') {callback = exclude;
 			exclude = false;
 		}
 
@@ -183,11 +230,20 @@ _Intention.module('intention/indexeddb', function()
 		return this.find(keyRange, callback);
 	};
 
-	IndexedDB.prototype.findBetween = function IndexedDB_findBetween(from, till, exclude1, exclude2, callback)
-	{
+	/**
+	 * Count the objects in the database,
+	 *
+	 * @method FindFrom
+	 *
+	 * @param {Mixed} From, from where we want what we want
+	 * @param {Mixed} Till, till where we want what we want
+	 * @param {Mixed} Exclude1, don't count these
+	 * @param {Mixed} Exclude2, don't count these
+	 * @param {Function} callback, called when the job is done
+	 */
+	IndexedDB.prototype.findBetween = function IndexedDB_findBetween(from, till, exclude1, exclude2, callback) {
 		// Excludes are optional
-		if (typeof exclude1 === 'function') {
-			callback = exclude1;
+		if (typeof exclude1 === 'function') {callback = exclude1;
 			exclude1 = false;
 			exclude2 = false;
 		}
@@ -197,15 +253,21 @@ _Intention.module('intention/indexeddb', function()
 		return this.find(keyRange, callback);
 	};
 
-	IndexedDB.prototype.find = function IndexedDB_find(keyRange, callback)
-	{
+	/**
+	 * Fetch an object from the database,
+	 *
+	 * @method Find
+	 *
+	 * @param {Cursor} KeyRange, The way we can recognize what we want
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.find = function IndexedDB_find(keyRange, callback) {
 		if (_private.sanitycheck(this, 'find', arguments)) {
 			var trans = this.db.transaction(this.name, 'readwrite'),
 				store = trans.objectStore(this.name),
 				cursorRequest = store.openCursor(keyRange);
 
-			cursorRequest.onsuccess = function cursorRequest_onsuccess(e)
-			{
+			cursorRequest.onsuccess = function cursorRequest_onsuccess(e) {
 				var result = e.target.result;
 				if (result) {
 					callback(result.value);
@@ -221,8 +283,15 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.remove = function IndexedDB_remove(id, callback)
-	{
+	/**
+	 * Remove an object from the database,
+	 *
+	 * @method Remove
+	 *
+	 * @param {Mixed} id, The way we can recognize what we want
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.remove = function IndexedDB_remove(id, callback) {
 		if (_private.sanitycheck(this, 'remove', arguments)) {
 			var trans = this.db.transaction([this.name], 'readwrite'),
 				store = trans.objectStore(this.name);
@@ -237,8 +306,14 @@ _Intention.module('intention/indexeddb', function()
 		return this;
 	};
 
-	IndexedDB.prototype.deleteDB = function IndexedDB_deleteDB(callback)
-	{
+	/**
+	 * Remove the entire database
+	 *
+	 * @method DeleteDB
+	 *
+	 * @param {Function} callback, Called when the job is done
+	 */
+	IndexedDB.prototype.deleteDB = function IndexedDB_deleteDB(callback) {
 		if (_private.sanitycheck(this, 'deleteDB', arguments)) {
 			var request = indexedDB.deleteDatabase(this.name);
 

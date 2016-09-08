@@ -1,5 +1,4 @@
-_Intention.module('intention/utils', function()
-{
+_Intention.module('intention/utils', function() {
 	'use strict';
 
 	var utils = {};
@@ -15,8 +14,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Array} or array-like object
 	 */
-	utils.handle = function handle(item)
-	{
+	utils.handle = function handle(item) {
 		if (typeof item === 'string') {
 			item = document.querySelectorAll(item);
 		}
@@ -46,19 +44,26 @@ _Intention.module('intention/utils', function()
 	 * Storage class so one can easily exchange information between unrelated modules without polluting the global scope.
 	 */
 	utils.storage = (function() {
+		// Private storage space
 		var storage = {};
 
 		return {
-			get:function storage_get(key)
-			{
+			/**
+			 * Get item with key
+			 */
+			get:function storage_get(key) {
 				return storage[key];
 			},
-			set:function storage_set(key, value)
-			{
+			/**
+			 * Set item key with value
+			 */
+			set:function storage_set(key, value) {
 				storage[key] = value;
 			},
-			has:function storage_has(key)
-			{
+			/**
+			 * Check if item exists with key
+			 */
+			has:function storage_has(key) {
 				return (typeof storage[key] !== 'undefined');
 			}
 		};
@@ -77,9 +82,8 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Number}
 	 */
-	utils.random = function random(min, max, exp)
-	{
-		if (typeof exp === 'undefined'){ exp = 0; }
+	utils.random = function random(min, max, exp) {
+		if (typeof exp === 'undefined') { exp = 0; }
 
 		// Reserving space for exp amount of numbers behind the comma
 		var modifier = Math.pow(10, exp);
@@ -105,14 +109,13 @@ _Intention.module('intention/utils', function()
 	/**
 	 * Shuffles given array
 	 *
-	 * @method  shuffle
+	 * @method shuffle
 	 *
-	 * @param  {Array} array
+	 * @param {Array} array The array to shuffle
 	 *
-	 * @return {Array}
+	 * @return {Array} The shuffled array
 	 */
-	utils.shuffle = function shuffle(array)
-	{
+	utils.shuffle = function shuffle(array) {
 		for (var j, x, i = array.length; i; j = Math.floor(Math.random() * i), x = array[--i], array[i] = array[j], array[j] = x);
 		return array;
 	};
@@ -122,13 +125,12 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @method dice
 	 *
-	 * @param {Int} n
-	 * @param {Int} s
+	 * @param {Int} n Amount of times to throw the dice
+	 * @param {Int} s The amount of sides to the dice
 	 *
 	 * @return {Int}
 	 */
-	utils.dice = function dice(n, s)
-	{
+	utils.dice = function dice(n, s) {
 		var i = 0;
 		while (n --) {
 			i += this.random(s);
@@ -147,8 +149,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {[type]}
 	 */
-	utils.indexOf = function indexOf(haystack, needle)
-	{
+	utils.indexOf = function indexOf(haystack, needle) {
 		// TODO: Does haystack *has* to be an instance of Array? Why?
 		if (typeof haystack.indexOf === 'function' && haystack instanceof Array) {
 			return haystack.indexOf(needle);
@@ -176,8 +177,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Boolean}
 	 */
-	utils.inArray = function inArray(needle, haystack)
-	{
+	utils.inArray = function inArray(needle, haystack) {
 		if (haystack instanceof Array) {
 			return (this.indexOf(haystack, needle) >= 0);
 		}
@@ -207,8 +207,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Array} contains the elements found
 	 */
-	utils.fuzzy = function fuzzy(needle, haystack, flags)
-	{
+	utils.fuzzy = function fuzzy(needle, haystack, flags) {
 		if (typeof flags === 'undefined') {
 			flags = 'ig';
 		}
@@ -236,18 +235,15 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Boolean} success
 	 */
-	utils.isJSON = function isJSON(json)
-	{
+	utils.isJSON = function isJSON(json) {
 		// JSON should always be a string
 		if (typeof json !== 'string'){ return false; }
-		try
-		{
+
+		try {
 			// If it's json, this should work.
 			JSON.parse(json);
 			return true;
-		}
-		catch(exception)
-		{
+		} catch(exception) {
 			// Guess it's not json afterall
 			return false;
 		}
@@ -262,8 +258,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Number} radians
 	 */
-	utils.deg2rad = function deg2rad(degrees)
-	{
+	utils.deg2rad = function deg2rad(degrees) {
 		return (degrees * (Math.PI / 180));
 	};
 
@@ -276,8 +271,7 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @return {Number} degrees
 	 */
-	utils.rad2deg = function rad2deg(radians)
-	{
+	utils.rad2deg = function rad2deg(radians) {
 		return (radians * (180 / Math.PI));
 	};
 
@@ -286,18 +280,17 @@ _Intention.module('intention/utils', function()
 	 *
 	 * @method stringifyObj
 	 *
-	 * @param  {[type]} obj          [description]
-	 * @param  {[type]} includeProto [description]
+	 * @param {Object} obj [description]
+	 * @param {Boolean} includeProto Whether or not to include the prototype of the object
 	 *
-	 * @return {[type]}              [description]
+	 * @return {String} The resulting string
 	 */
-	utils.stringifyObj = function stringifyObj(obj, includeProto)
-	{
+	utils.stringifyObj = function stringifyObj(obj, includeProto) {
 		var str = '{';
 		for (var key in obj) {
 			if (includeProto || obj.hasOwnProperty(key)) {str += key + ':';
 				if (typeof obj[key] === 'object') {
-					str += stringify(obj[key]);
+					str += stringifyObj(obj[key], includeProto);
 				} else {
 					// If obj[key] is a function, += will call the toString() method
 					str += obj[key];
@@ -320,8 +313,7 @@ _Intention.module('intention/utils', function()
 	/**
 	 * @todo: Documentation;
 	 */
-	utils.sortTBody = function Uitls_sort(tbody, col, asc, intval)
-	{
+	utils.sortTBody = function Uitls_sort(tbody, col, asc, intval) {
 		var rows = tbody.rows,
 			rlen = rows.length,
 			arr = [], i, j, cells, clen;
@@ -356,31 +348,34 @@ _Intention.module('intention/utils', function()
 	};
 
 	/**
-	 * [capitalize description]
+	 * Capitalize the first character of a string
 	 *
 	 * @method capitalize
 	 *
-	 * @param  {String} str
+	 * @param {String} str
 	 *
 	 * @return {String} STR
 	 */
-	utils.capitalize = function capitalize(str)
-	{
+	utils.capitalize = function capitalize(str) {
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	};
 
 	/**
-	 * [capitalize description]
+	 * Get the angle between two coordinate points.
 	 *
 	 * @method getAngleBetween
 	 *
-	 * @param  {x,y} a [description]
-	 * @param  {x,y} b [description]
+	 * @param {x,y} a Object (with x,y coordinates)
+	 * @param {x,y} b Object (with x,y coordinates)
 	 *
-	 * @return {Number}     [description]
+	 * @return {Number} The angle between the two coordinates or False if it can't be done
 	 */
-	utils.getAngleBetween = function getAngleBetween(a, b)
-	{
+	utils.getAngleBetween = function getAngleBetween(a, b) {
+		// Sanity check
+		if ((typeof a.x === 'undefined') || (typeof a.y === 'undefined') || (typeof b.x === 'undefined') || (typeof b.y === 'undefined')) {
+			return false;
+		}
+
 		var dx = (b.x - a.x),
 			dy = (b.y - a.y);
 
@@ -388,17 +383,19 @@ _Intention.module('intention/utils', function()
 	};
 
 	/**
-	 * [getMouseCoords description]
+	 * Get the coordinates of the mouse at the time of calling
 	 *
 	 * @method getMouseCoords
 	 *
-	 * @param HTMLObject element
+	 * @depends Mouse
+	 *
+	 * @param {Event} e Event
+	 * @param {HTMLObject} element The element to base the coordinates on.
 	 *
 	 * @return Something
 	 */
-	utils.getMouseCoords = function getMouseCoords(e, element)
-	{
-		if (!e) { e = window.event; } // God I hate IE
+	utils.getMouseCoords = function getMouseCoords(e, element) {
+		if (!e) { e = window.event; } // Stupid IE
 
 		var totalOffsetX = 0, totalOffsetY = 0,
 			elementX = 0, elementY = 0,

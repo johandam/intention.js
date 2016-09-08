@@ -1,17 +1,24 @@
-_Intention.module('intention/utils', 'intention/slave', function(utils)
-{
+_Intention.module('intention/utils', 'intention/slave', function(utils) {
 	'use strict';
 
-	function Slave()
-	{
+	/**
+	 * Constructor function, creates a new Slave (AKA WebWorker)
+	 */
+	function Slave() {
 		this.worker = null;
 
 		this.includeProto = false;
 		this.fn = {};
 	}
 
-	Slave.prototype.giveJob = function Slave_giveJob(func)
-	{
+	/**
+	 * Slaves need to work, give them a job
+	 *
+	 * @method GiveJob
+	 *
+	 * @param {Function} func The job to perform
+	 */
+	Slave.prototype.giveJob = function Slave_giveJob(func) {
 		try {
 			this.webWorkerPerform(func);
 		} catch(e) {
@@ -22,8 +29,15 @@ _Intention.module('intention/utils', 'intention/slave', function(utils)
 		return this;
 	};
 
-	Slave.prototype.giveTools = function Slave_giveTools(fn, includeProto)
-	{
+	/**
+	 * To do a good job, a slave needs tools
+	 *
+	 * @method GiveTools
+	 *
+	 * @param {Object} fn Object containing everything the Worker should need
+	 * @param {Boolean} includeProto Whether or not to include the prototype
+	 */
+	Slave.prototype.giveTools = function Slave_giveTools(fn, includeProto) {
 		if (this.worker !== null) {
 			throw 'slave.giveTools() must be called before slave.giveJob(), not after';
 		}
@@ -34,46 +48,63 @@ _Intention.module('intention/utils', 'intention/slave', function(utils)
 		return this;
 	};
 
-	Slave.prototype.work = function Slave_work()
-	{
+	/**
+	 * Tell the slave to start working
+	 * Any argument will be passed to the Slave through postMessage
+	 */
+	Slave.prototype.work = function Slave_work() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		this.worker.postMessage(args);
 
 		return this;
 	};
 
-	Slave.prototype.whenComplete = function whenComplete(callback)
-	{
-		this.worker.onmessage = function worker_onmessage(e)
-		{
+	/**
+	 * When the Slave is done with something and has something to say, call this function
+	 *
+	 * @param {Function} callback
+	 */
+	Slave.prototype.whenComplete = function whenComplete(callback) {
+		this.worker.onmessage = function worker_onmessage(e) {
 			callback(e.data);
 		};
 
 		return this;
 	};
 
-	Slave.prototype.webWorkerPerform = function Slave_webWorkerPerform(func)
-	{
-		var blob = new Blob([
+	/**
+	 * Creates the WebWorker with the given instructions
+	 *
+	 * @depends WebWorker
+	 *
+	 * @param {Function} func The job to perform
+	 */
+	Slave.prototype.webWorkerPerform = function Slave_webWorkerPerform(func) {
+		var b = new Blob([
 			'try {' +
-			'var fn = ' + utils.stringifyObj(this.fn, this.includeProto) + ';' +
-			'var that = fn;' +
-			'self.onmessage = function(e) {' +
-				'self.postMessage(' + func + '.apply(fn, e.data))' +
-			'}' +
+				'var fn = ' + utils.stringifyObj(this.fn, this.includeProto) + ';' +
+				'var that = fn;' +
+				'self.onmessage = function(e) {' +
+					'self.postMessage(' + func + '.apply(fn, e.data))' +
+				'}' +
 			'} catch(e) {' +
 			' throw e;' +
 			'}'
 		]);
 
-		this.worker = new Worker(window.URL.createObjectURL(blob));
+		this.worker = new Worker(window.URL.createObjectURL(b));
 	};
 
-	Slave.prototype.fallbackPerform = function Slave_fallbackPerform(func)
-	{
+	/**
+	 * If WebWorkers aren't available then we will have to fake it till we make it.
+	 * Obviously this won't benefit from the advantages of webworkers
+	 * but it will get the job you give it done.
+	 *
+	 * @param {Function} func The job to perform
+	 */
+	Slave.prototype.fallbackPerform = function Slave_fallbackPerform(func) {
 		this.worker = {
-			postMessage:function(args)
-			{
+			postMessage:function(args) {
 				// We're expected to be async, this is the closest thing we can get to that without WebWorkers
 				var that = this;
 				setTimeout(function() {
@@ -84,7 +115,7 @@ _Intention.module('intention/utils', 'intention/slave', function(utils)
 					});
 				}, 1);
 			},
-			onmessage:function(){ /* ===== placeholder ===== */ }
+			onmessage:function() { /* ===== placeholder ===== */ }
 		};
 	};
 

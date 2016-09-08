@@ -1,8 +1,10 @@
-_Intention.module('intention/utils', 'intention/dom/trigger', function(utils)
-{
+_Intention.module('intention/utils', 'intention/dom/trigger', function(utils) {
 	'use strict';
-	function _fireEvent(element, type, data)
-	{
+
+	/**
+	 * Private method to actually fire an event
+	 */
+	function _fireEvent(element, type, data) {
 		data = (data || {});
 		data.detail = (data.detail || {});
 		data.bubbles = (data.bubbles || true);
@@ -19,26 +21,22 @@ _Intention.module('intention/utils', 'intention/dom/trigger', function(utils)
 
 		// Stupid IE - Let's trigger the onpropertychange event since it doesn't support custom events
 		element['_' + type + '_'] = data;
-		// element['_' + type + '_'] ++;
 
 		return true;
 	}
 
 	/**
-	 * [trigger description]
+	 * Fires an <type> event for <element> with <data>
 	 *
 	 * @method trigger
 	 *
 	 * @depends [depends]
 	 *
-	 * @param {[type]} element
-	 * @param {[type]} type
-	 * @param {[type]} data
-	 *
-	 * @return {[type]}
+	 * @param {Element} element
+	 * @param {String} type
+	 * @param {Object} data
 	 */
-	function trigger(element, type, data)
-	{
+	function trigger(element, type, data) {
 		var list = utils.handle(element);
 		for (var i = list.length; i --;) {
 			_fireEvent(list[i], type, data);

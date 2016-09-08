@@ -1,17 +1,15 @@
-_Intention.module('intention/extend', function()
-{
+_Intention.module('intention/extend', function() {
 	'use strict';
 
 	// Cross-browser support for getPrototypeOf method
 	// Thanks to: http://ejohn.org/blog/objectgetprototypeof/
 	if (typeof Object.getPrototypeOf !== 'function') {
 		if (typeof String.__proto__ === 'object') {
-			Object.getPrototypeOf = function(obj)
-			{
+			Object.getPrototypeOf = function(obj) {
 				return obj.__proto__;
 			};
 		} else {
-			Object.getPrototypeOf = function(obj){
+			Object.getPrototypeOf = function(obj) {
 				// May break if the constructor has been tampered with
 				return obj.constructor.prototype;
 			};
@@ -19,19 +17,14 @@ _Intention.module('intention/extend', function()
 	}
 
 	/**
-	 * [extend description]
+	 * Extends object <child> with the capabilities of <parent> just like OOP (but different)
 	 *
 	 * @method extend
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} child
-	 * @param {[type]} parent
-	 *
-	 * @return {[type]}
+	 * @param {Object} child
+	 * @param {Object} parent
 	 */
-	function extend(child, parent)
-	{
+	function extend(child, parent) {
 		var obj, constructor = false;
 		if (typeof parent === 'function') {
 			constructor = parent;
@@ -51,7 +44,7 @@ _Intention.module('intention/extend', function()
 		else {
 			// The wrapper function is to shut up strict mode.
 			(function() {
-				function F(){}
+				function F() {}
 				F.prototype = parent;
 				obj = new F();
 			})();
@@ -66,8 +59,7 @@ _Intention.module('intention/extend', function()
 			// We want parent() to work for grandparents aswell
 			// Therefor we need to keep count where in the inheritance chain we actualy are.
 			var _called = [];
-			return function Intention_extend_parent(method)
-			{
+			return function Intention_extend_parent(method) {
 				_called[method] = (_called[method] || 0);
 
 				// Set variables local to prevent global pollution
@@ -80,8 +72,7 @@ _Intention.module('intention/extend', function()
 
 				// Descent (or is it ascent?) the inheritance chain
 				// To find the correct object that holds the function we want
-				while(inheritanceChain --)
-				{
+				while (inheritanceChain --) {
 					child = proto;
 					proto = Object.getPrototypeOf(child);//.parent;
 				}
@@ -119,8 +110,7 @@ _Intention.module('intention/extend', function()
 		})();
 
 		// Easy way to define an abstract method
-		obj.abstract = function obj_abstract(method)
-		{
+		obj.abstract = function obj_abstract(method) {
 			extend.abstract(obj, method);
 		};
 
@@ -132,26 +122,20 @@ _Intention.module('intention/extend', function()
 	}
 
 	/**
-	 * [abstract description]
+	 * JS OOP has gone too far, why on Earth would we need an abstract method? But we do!
 	 *
 	 * @method abstract
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} receiver
-	 * @param {[type]} method
-	 *
-	 * @return {[type]}
+	 * @param {Object} receiver
+	 * @param {String} method
 	 */
-	extend.abstract = function Intention_abstract(receiver, method)
-	{
+	extend.abstract = function Intention_abstract(receiver, method) {
 		if (typeof receiver === 'function') {
 			receiver = receiver.prototype;
 		}
 
 		if (typeof receiver[method] === 'undefined') {
-			receiver[method] = function()
-			{
+			receiver[method] = function() {
 				throw 'Calling abstract method ' + method;
 			};
 		}

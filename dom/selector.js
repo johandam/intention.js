@@ -1,13 +1,11 @@
-_Intention.module('intention/utils', 'intention/dom/selector', function(utils)
-{
+_Intention.module('intention/utils', 'intention/dom/selector', function(utils) {
 	'use strict';
 
 	// document.querySelectorAll support for browsers that don't have it (Stupid IE).
 	// Also used as fallback for document.getElementsByClassName
 	// Thanks to http://ajaxian.com/archives/creating-a-queryselector-for-ie-that-runs-at-native-speed.
 	if (!document.querySelectorAll) {
-		document.querySelectorAll = function fallback_querySelecterAll(query)
-		{
+		document.querySelectorAll = function fallback_querySelecterAll(query) {
 			var head = document.documentElement.firstChild,
 				styleTag = document.createElement('style'),
 				result = [];
@@ -44,30 +42,25 @@ _Intention.module('intention/utils', 'intention/dom/selector', function(utils)
 
 	// ===== Element Selector ===== //
 
-	/**
-	 * TODO: Whatever the documentation below is telling you, it is lying.
-	 *
-	 * Returns all DOM elements matching the query inside the scope
-	 *
-	 * @method select
-	 *
-	 * @depends [depends]
-	 *
-	 * @param {String]} query Represents the query
-	 * @param {Object} scope Optional DOM Element representing the scope, defaults to document
-	 *
-	 * @return {Array} The DOM Elements matched
-	 */
 	return {
-		select:function select(query, scope)
-		{
+		/**
+		 * Returns all DOM elements matching the query inside the scope
+		 *
+		 * @method select
+		 *
+		 * @param {String]} query Represents the query
+		 * @param {Object} scope Optional DOM Element representing the scope, defaults to document
+		 *
+		 * @return {Array} The DOM Elements matched
+		 */
+		select:function select(query, scope) {
 			scope = (scope || document);
 
 			// fetching id's, no need to use a slow method like querySelectorAll to fetch ID's
 			if (/^#[a-z0-9_-]+$/i.test(query)) {
 				var element = scope.getElementById(query.substr(1));
 				if (element) {
-					// Normalize return values, always return array(-like) objects.
+					// Normalize return values, always return array(-ish) objects.
 					return [element];
 				}
 			}
@@ -89,9 +82,17 @@ _Intention.module('intention/utils', 'intention/dom/selector', function(utils)
 			}
 		},
 
-		// Find all the elements matching the needle query inside the parents matching the haystack
-		find:function select_find(haystack, needle)
-		{
+		/**
+		 * Returns all DOM elements matching the neelde inside whatever matches haystack
+		 *
+		 * @method find
+		 *
+		 * @param {String]} query Represents the query
+		 * @param {Object} scope Optional DOM Element representing the scope, defaults to document
+		 *
+		 * @return {Array} The DOM Elements matched
+		 */
+		find:function select_find(haystack, needle) {
 			var parents = utils.handle(haystack),
 				children = [];
 
@@ -105,8 +106,17 @@ _Intention.module('intention/utils', 'intention/dom/selector', function(utils)
 			return children;
 		},
 
-		get:function select_get(query, scope)
-		{
+		/**
+		 * Returns the first DOM element matching the query inside the scope
+		 *
+		 * @method get
+		 *
+		 * @param {String]} query Represents the query
+		 * @param {Object} scope Optional DOM Element representing the scope, defaults to document
+		 *
+		 * @return {Array} The DOM Elements matched
+		 */
+		get:function select_get(query, scope) {
 			var item = this.select(query, scope);
 			return (item ? item[0] : null);
 		}

@@ -1,5 +1,4 @@
-_Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
-{
+_Intention.module(['intention/utils'], 'intention/dom/element', function(utils) {
 	'use strict';
 
 	return {
@@ -16,8 +15,7 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 		 *
 		 * @return {Mixed} If value is given, returns boolean succes. Otherwise returns value of specified property
 		 */
-		attr:function Element_attr(query, property, value)
-		{
+		attr:function Element_attr(query, property, value) {
 			var list = utils.handle(query);
 			if (typeof value === 'undefined') {
 				if (list[0]) {
@@ -46,18 +44,15 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 		},
 
 		/**
-		 * [style description]
+	 	 * Get / set CSS style to the given element.
 		 *
 		 * @method style
 		 *
-		 * @param {[type]} element
-		 * @param {[type]} property
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
+		 * @param {Object} element
+		 * @param {String} property The property to change / retrieve
+		 * @param {Mixed} value, Optional, if undefined retrieves the value without altering it
 		 */
-		style:function Element_style(element, property, value)
-		{
+		style:function Element_style(element, property, value) {
 			var list = utils.handle(element);
 
 			// Check if we should return the value instead of setting it
@@ -85,23 +80,20 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 				list[i].style[property] = value;
 			}
 
-			return true;
+			return this;
 		},
 
 		/**
-		 * [css description]
+		 * Apply a bunch of CSS styles to an element
 		 *
 		 * @method css
 		 *
 		 * @depends this.style()
 		 *
-		 * @param {[type]} element
-		 * @param {[type]} css
-		 *
-		 * @return {[type]}
+		 * @param {Object} element
+		 * @param {Object} css The CSS rules to aplpy in object format
 		 */
-		css:function Element_css(element, css)
-		{
+		css:function Element_css(element, css) {
 			for (var property in css) {
 				if (css.hasOwnProperty(property)) {
 					this.style(element, property, css[property]);
@@ -124,33 +116,32 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 		 * @param {Number} duration How long the animation should take in seconds, defaults to 1
 		 * @param {Number} delay How long to wait before the animation starts in seconds, defaults to 0
 		 * @param {String} easing What kind of easing should be used, defaults to ease-in-out
-		 * @param {Function} callback Optional callback function that will be executed when the animation completes
-		 *
+		 * @param {Function} callback Optional callback function that will be executed when the animation completes *
 		 * @return {[type]}
 		 */
-		animate:function Element_animate(element, property, value, duration, delay, easing, callback)
-		{
+		animate:function Element_animate(element, property, value, duration, delay, easing, callback) {
 			// Make sure property is an array
 			if (typeof property === 'undefined') { property = ['all']; } else if (typeof property === 'string') { property = [property]; }
+
 			// Handle duration, if duration is a function, assume it to be the callback
-			if (typeof duration === 'function') {
-				callback = duration;
+			if (typeof duration === 'function') {callback = duration;
 				duration = undefined;
 			}
 
 			if (typeof duration === 'number') { duration += 's'; } else if (typeof duration === 'undefined') { duration = '1s'; }
+
 			// Handle delay, if delay is a function, assume it to be the callback
-			if (typeof delay === 'function') {
-				callback = delay;
+			if (typeof delay === 'function') {callback = delay;
 				delay = undefined;
 			}
 
 			if (typeof delay === 'undefined') { delay = '0s'; } else if (typeof delay === 'number') { delay += 's'; }
+
 			// Handle easing, if easing is a function, assume it to be the callback
-			if (typeof easing === 'function') {
-				callback = easing;
+			if (typeof easing === 'function') {callback = easing;
 				easing = undefined;
 			}
+
 			if (typeof easing === 'undefined') { easing = 'ease-in-out'; }
 
 			var that = this;
@@ -177,121 +168,31 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 		},
 
 		// ===== this.attr() Facades ===== //
-
-		/**
-		 * [data description]
-		 *
-		 * @method data
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} property
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		data:function Element_attr_data(element, property, value)
-		{
+		data:function Element_attr_data(element, property, value) {
 			return this.attr(element, 'data-' + property, value);
 		},
 
-		/**
-		 * [html description]
-		 *
-		 * @method html
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		html:function Element_attr_html(element, value)
-		{
+		html:function Element_attr_html(element, value) {
 			return this.attr(element, 'innerHTML', value);
 		},
 
-		/**
-		 * [text description]
-		 *
-		 * @method text
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		text:function Element_attr_text(element, value)
-		{
+		text:function Element_attr_text(element, value) {
 			return this.attr(element, 'textContent', value);
 		},
 
-		/**
-		 * [value description]
-		 *
-		 * @method value
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		value:function Element_attr_value(element, value)
-		{
+		value:function Element_attr_value(element, value) {
 			return this.attr(element, 'value', value);
 		},
 
-		/**
-		 * [className description]
-		 *
-		 * @method className
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 *
-		 * @return {[type]}
-		 */
-		className:function Element_attr_className(element)
-		{
+		className:function Element_attr_className(element) {
 			return this.attr(element, 'className');
 		},
 
-		/**
-		 * [hasClass description]
-		 *
-		 * @method hasClass
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {Boolean}
-		 */
-		hasClass:function Element_attr_hasClass(element, value)
-		{
+		hasClass:function Element_attr_hasClass(element, value) {
 			return (this.className(element).split(' ').indexOf(value) !== -1);
 		},
 
-		/**
-		 * [addClass description]
-		 *
-		 * @method addClass
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 */
-		addClass:function Element_attr_addClass(element, value)
-		{
+		addClass:function Element_attr_addClass(element, value) {
 			if (!this.hasClass(element, value)) {
 				return this.attr(element, 'className', (this.className(element) + ' ' + value));
 			}
@@ -299,20 +200,7 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 			return false;
 		},
 
-		/**
-		 * [removeClass description]
-		 *
-		 * @method removeClass
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		removeClass:function Element_attr_removeClass(element, value)
-		{
+		removeClass:function Element_attr_removeClass(element, value) {
 			var c = this.attr(element, 'className')
 			if (c) {
 				return this.attr(element, 'className', c.replace(value, ''));
@@ -321,82 +209,27 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 			return null;
 		},
 
-		/**
-		 * [toggleClass description]
-		 *
-		 * @method toggleClass
-		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 * @param {[type]} value
-		 *
-		 * @return {[type]}
-		 */
-		toggleClass:function Element_attr_toggleClass(element, value)
-		{
+		toggleClass:function Element_attr_toggleClass(element, value) {
 			if (this.hasClass(element, value)) {
 				this.removeClass(element, value);
-			}
-			else
-			{
+			} else {
 				this.addClass(element, value);
 			}
 		},
 
 		// ===== this.style() Facades ===== //
 
-		/**
-		 * Facade for this.style(element, 'display', 'block')
-		 *
-		 * @method show
-		 *
-		 * @depends this.style()
-		 *
-		 * @param {Mixed} element The element to show
-		 *
-		 * @return {Boolean} success
-		 */
-		show:function Element_style_show(element)
-		{
+		show:function Element_style_show(element) {
 			return this.style(element, 'display', 'block');
 		},
 
-		/**
-		 * Facade for this.style(element, 'display', 'none')
-		 *
-		 * @method hide
-		 *
-		 * @depends this.style()
-		 *
-		 * @param {Mixed} element The element to hide
-		 *
-		 * @return {Boolean} success
-		 */
-		hide:function Element_style_hide(element)
-		{
+		hide:function Element_style_hide(element) {
 			return this.style(element, 'display', 'none');
 		},
 
 		// ===== this.animate() Facades ===== //
 
-		/**
-		 * [slideDown description]
-		 *
-		 * @method slideDown
-		 *
-		 * @depends this.animate()
-		 *
-		 * @param {Mixed} element
-		 * @param {Number} duration How long the animation should take in seconds, defaults to 1
-		 * @param {Number} delay How long to wait before the animation starts in seconds, defaults to 0
-		 * @param {String} easing What kind of easing should be used, defaults to ease-in-out
-		 * @param {Function} callback Optional callback function that will be executed when the animation completes
-		 *
-		 * @return {[type]}
-		 */
-		slideDown:function Element_animate_slideDown(element, duration, delay, easing, callback)
-		{
+		slideDown:function Element_animate_slideDown(element, duration, delay, easing, callback) {
 			var list = utils.handle(element);
 
 			for (var i = list.length; i --;) {
@@ -424,23 +257,7 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 			}
 		},
 
-		/**
-		 * [slideUp description]
-		 *
-		 * @method slideUp
-		 *
-		 * @depends this.animate()
-		 *
-		 * @param {Mixed} element
-		 * @param {Number} duration How long the animation should take in seconds, defaults to 1
-		 * @param {Number} delay How long to wait before the animation starts in seconds, defaults to 0
-		 * @param {String} easing What kind of easing should be used, defaults to ease-in-out
-		 * @param {Function} callback Optional callback function that will be executed when the animation completes
-		 *
-		 * @return {Mixed}
-		 */
-		slideUp:function Element_animate_slideUp(element, duration, delay, easing, callback)
-		{
+		slideUp:function Element_animate_slideUp(element, duration, delay, easing, callback) {
 			var list = utils.handle(element);
 
 			for (var i = list.length; i --;) {
@@ -456,12 +273,9 @@ _Intention.module(['intention/utils'], 'intention/dom/element', function(utils)
 					this.animate(el, 'height', 0, duration, delay, easing, callback);
 				}
 			}
-
-			// return false;
 		},
 
-		slide:function Element_animate_slide(element, duration, delay, easing, callback)
-		{
+		slide:function Element_animate_slide(element, duration, delay, easing, callback) {
 			// Since both functions check wether or not they are supposed to be doing something, I don't have to.
 			this.slideDown(element, duration, delay, easing, callback);
 			this.slideUp(element, duration, delay, easing, callback);

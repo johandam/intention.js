@@ -1,24 +1,22 @@
-_Intention.module(['intention/dom/selector', 'intention/dom/element', 'intention/utils'], 'intention/dom/html', function(selector, element, utils)
-{
+_Intention.module(['intention/dom/selector', 'intention/dom/element', 'intention/utils'], 'intention/dom/html', function(selector, element, utils) {
 	'use strict';
 
 	return {
 		/**
-		 * [create description]
+		 * Creates an HTML tag
 		 *
 		 * @method create
 		 *
-		 * @depends [depends]
+		 * @depends document
 		 *
-		 * @param {[type]} tag
-		 * @param {[type]} options
-		 * @param {[type]} children
-		 * @param {[type]} appendTo
+		 * @param {String} tag
+		 * @param {Object} options
+		 * @param {Array} children
+		 * @param {String} appendTo
 		 *
-		 * @return {[type]}
+		 * @return {Element}
 		 */
-		create:function create(tag, options, children, appendTo)
-		{
+		create:function create(tag, options, children, appendTo) {
 			options = (options || {});
 			children = (children || []);
 
@@ -29,8 +27,8 @@ _Intention.module(['intention/dom/selector', 'intention/dom/element', 'intention
 					// Since we are changing keys like 'innerHTML' we want to preserve the original value
 					var key = i;
 
-					if (i === 'html'){ key = 'innerHTML'; }
-					else if (i === 'class'){ key = 'className'; }
+					if (i === 'html') { key = 'innerHTML'; }
+					else if (i === 'class') { key = 'className'; }
 					else if (i === 'style' && typeof options[i] !== 'string') {
 						element.css(el, options[i]);
 						continue;
@@ -47,6 +45,7 @@ _Intention.module(['intention/dom/selector', 'intention/dom/element', 'intention
 				}
 			}
 
+			// @Todo Isn't this always true?
 			if (typeof children.length !== 'undefined') {
 				// Append ALL the children!
 				for (var j = 0; j < children.length; j ++) {
@@ -89,18 +88,13 @@ _Intention.module(['intention/dom/selector', 'intention/dom/element', 'intention
 		},
 
 		/**
-		 * [remove description]
+		 * Removes an element from the DOM Tree
 		 *
 		 * @method remove
 		 *
-		 * @depends [depends]
-		 *
-		 * @param {[type]} element
-		 *
-		 * @return {[type]}
+		 * @param {Element} element
 		 */
-		remove:function remove(el)
-		{
+		remove:function remove(el) {
 			var list = utils.handle(el), parent, i;
 			for (i = list.length; i --;) {
 				parent = list[i].parentElement;

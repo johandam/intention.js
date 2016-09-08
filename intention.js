@@ -1,5 +1,4 @@
-var _Intention = (function()
-{
+var _Intention = (function() {
 	'use strict';
 
 	// Private variables, used by the functions defined below.
@@ -9,7 +8,7 @@ var _Intention = (function()
 		_modules = [],             // Holds all the modules initial function
 		_modulesTotal = 0,         // Total amount of modules to be included
 		_modulesCompleted = 0,     // Total amount of modules currently included
-		_anonymous = 0,            // Used to keep track of anonymous modules for I.load();
+		_anonymous = 0,            // Used to keep track of anonymous modules for load();
 		_urlPattern = new RegExp(
 			'^(https?:\/\/)?'+ // protocol
 			'((([a-z0-9]([a-z0-9-]*[a-z0-9])*)\\.)+[a-z]{2,}|'+  // domain name
@@ -17,31 +16,29 @@ var _Intention = (function()
 			'(\\:0-9+)?(\/[-a-z0-9%_.~+]*)*'+                    // port and path
 			'(\\?[;&a-z0-9%_.~+=-]*)?'+                          // query string
 			'(\\#[-a-z0-9_]*)?$', 'i'                            // fragment locater
-		); // Used to check if a dependancy is an URL and thus, should not receive prefix / suffix
+		), // Used to check if a dependancy is an URL and thus, should not receive prefix / suffix
 
-	// What we will export in this function
-	var _export = {
-		module:module,
-		load:load,
-		get:get,
-		prefix:'/js/',
-		suffix:'.js'
-	};
+		// What we will export in this function
+		_export = {
+			module:module,
+			load:load,
+			get:get,
+			prefix:'/js/',
+			suffix:'.js'
+		};
 
-	function initializeModules()
-	{
+	// When we got all the modules ready, it's time to set them all up.
+	function initializeModules() {
 		// Go through all the callbacks and execute it
 		for (var i = _modules.length; i --;) {
 			initialize(_modules[i]);
 		}
 	}
 
-	function initialize(item)
-	{
+	// Set each module up with the proper dependancies
+	function initialize(item) {
 		var args = [], // Holds the dependancies so we can give it to the module when we're done.
-			name = item.name, // Shortcut
-			dependancies = item.dependancies, // Shortcut
-			dependancy;
+			name = item.name, dependancies = item.dependancies, dependancy;
 
 		for (var i = 0; i < dependancies.length; i ++) {
 			dependancy = getDependancy(dependancies[i]);
@@ -57,8 +54,10 @@ var _Intention = (function()
 		}
 	}
 
-	function getDependancy(name)
-	{
+	/**
+	 * Get the dependancy if we can find it
+	 */
+	function getDependancy(name) {
 		var dependancy = _processed[name];
 
 		if (typeof dependancy === 'undefined') {
@@ -67,10 +66,11 @@ var _Intention = (function()
 				var module = findModule(name);
 				initialize(module);
 			} catch(err) {
-				console.info('Unable to find requested module (' + name + '), hopefully you didn\'t meant for it to be a module');
 				// Module not found... now whut?
-				// It could make sense with the ignorePrefix flag to load something from an external website.
-				// It could also be a typo or other user-error, who knows?
+				// If it was meant to be a module, this is an error. Maybe the module name contains a typo or something. So we should throw an error
+				// But if it's an externalal source that doesn't obay the module pattern, it makes perfect sense we can't find it. So we shouldn't throw an error
+				// Let's mediate and throw an info instead.
+				console.info('Unable to find requested module (' + name + '), hopefully you didn\'t meant for it to be a module');
 			}
 
 			// Even though the dependancy got loaded, we stil have an 'undefined' in the variable, let's fix that
@@ -80,8 +80,10 @@ var _Intention = (function()
 		return dependancy;
 	}
 
-	function findModule(name)
-	{
+	/**
+	 * Retrieve the module
+	 */
+	function findModule(name) {
 		// This is an ugly way to find the correct dependancy, but I don't know of a better way
 		for (var i = _modules.length; i --;) {
 			if (_modules[i].name === name) {
@@ -92,22 +94,19 @@ var _Intention = (function()
 		throw 'Module "' + name + '" not found';
 	}
 
-	function addScript(dependancy, ignorePrefix, callback)
-	{
-		// TODO: Check the onerror event for IE so we know when the file can not be loaded in IE
-		// ... Who the fuck cares about IE?
+	function addScript(dependancy, ignorePrefix, callback) {
+		// TODO: Check the onerror event for Stupid IE so we know when the file can not be loaded in Stupid IE
+		// wait... Who the fuck cares about Stupid IE?
 
 		var s = document.createElement('script');
 		s.onload = callback;
 
-		s.onerror = function()
-		{
+		s.onerror = function() {
 			throw '404: Dependancy "' + dependancy + '" failed to load (did you check the prefix / suffix?)';
 		};
 
 		// Stupid IE - Doesn't reconize .onload()
-		s.onreadystatechange = function()
-		{
+		s.onreadystatechange = function() {
 			if (this.readyState === 'loaded' && !this.nextSibling) {
 				this.onerror();
 			}
@@ -124,8 +123,11 @@ var _Intention = (function()
 		_body.appendChild(s);
 	}
 
-	function getSrc(dependancy, ignorePrefix)
-	{
+	/**
+	 * Some stuff we load in through our own module pattern, others are just random scripts on the web
+	 * We need to deal with both of them
+	 */
+	function getSrc(dependancy, ignorePrefix) {
 		if (ignorePrefix || _urlPattern.test(dependancy)) {
 			return dependancy;
 		}
@@ -134,9 +136,12 @@ var _Intention = (function()
 		return (_export.prefix + dependancy + _export.suffix);
 	}
 
-	function resetCounters()
-	{
-		// TODO: Uncomment or remove below comments when I'm sure wether or not they should be in/excluded
+	/**
+	 * The code below probalby contains bugs. I doubt this works perfectly when multiple loads etc are called within each other.
+	 */
+	function resetCounters() {
+		// TODO: The commented code below is in purgatory, possibly necesary possibly garbage.
+		// Uncomment or remove below comments when I'm sure wether or not they should be in/excluded
 
 		// _unprocessed = {}; // Holds a list of all the modules included
 		// _processed = {}; // Holds all processed modules
@@ -150,17 +155,12 @@ var _Intention = (function()
 	 *
 	 * @method module
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} dependancies
-	 * @param {[type]} name
-	 * @param {[type]} module
-	 * @param {[type]} ignorePrefix
-	 *
-	 * @return {[type]}
+	 * @param {Mixed} dependancies Which stuff you want to have available when your module starts
+	 * @param {String} name, A module needs a name so it can become a dependancy for others
+	 * @param {Function} module, will be called when all dependancies have been retrieved, the dependancies will be in the arguments
+	 * @param {Boolean} ignorePrefix, make it clear the dependancies are not modules (I think?)
 	 */
-	function module(dependancies, name, module, ignorePrefix)
-	{
+	function module(dependancies, name, module, ignorePrefix) {
 		// Check if the first parameter is meant as the name of the module, instead of the dependancies
 		if (typeof dependancies === 'string' && typeof name === 'function') {
 			module = name;
@@ -168,7 +168,9 @@ var _Intention = (function()
 			dependancies = [];
 		}
 
-		if (_processed[name]){ return _processed[name]; }
+		if (_processed[name]){
+			return _processed[name];
+		}
 		_unprocessed[name] = module;
 
 		// Dammit Jim, I'm an array, not a string!
@@ -195,8 +197,7 @@ var _Intention = (function()
 				_modulesTotal ++;
 
 				// Add it!
-				addScript(dependancies[i], ignorePrefix, function()
-				{
+				addScript(dependancies[i], ignorePrefix, function() {
 					_modulesCompleted ++;
 
 					if (_modulesTotal === _modulesCompleted) {
@@ -208,20 +209,15 @@ var _Intention = (function()
 	}
 
 	/**
-	 * [load description]
+	 * Load the given dependancies, works basically as a module except it can't become a dependancy of it's own.
 	 *
 	 * @method load
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} dependancies
+	 * @param {Array} dependancies
 	 * @param {Function} callback
-	 * @param {[type]} ignorePrefix
-	 *
-	 * @return {[type]}
+	 * @param {Boolean} ignorePrefix
 	 */
-	function load(dependancies, callback, ignorePrefix)
-	{
+	function load(dependancies, callback, ignorePrefix) {
 		resetCounters();
 
 		var anonName = _anonymous ++;
@@ -230,18 +226,15 @@ var _Intention = (function()
 	}
 
 	/**
-	 * [get description]
+	 * Fetch a module
 	 *
 	 * @method get
 	 *
-	 * @depends [depends]
+	 * @param {String} name
 	 *
-	 * @param {[type]} name
-	 *
-	 * @return {[type]}
+	 * @return {Function} the module
 	 */
-	function get(module)
-	{
+	function get(module) {
 		return _processed[module];
 	}
 

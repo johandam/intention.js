@@ -1,36 +1,36 @@
-_Intention.module('intention/timer', function()
-{
+_Intention.module('intention/timer', function() {
 	'use strict';
 
+	// Keeps track of the Timers
+	var _timers = {};
+
 	/**
-	 * [Timer description]
+	 * Constructor function, basically it's an OOP way of dealing with setIntervals
 	 *
 	 * @method Timer
 	 *
-	 * @depends [depends]
+	 * @param {Function} callback, Optional. Can be given at other places, to be called when the timer is done
+	 * @param {Number} interval of the timer, Optional. Can be given at other places
 	 */
-	function Timer()
-	{
+	function Timer(callback, interval) {
 		this.timer = null;
-		this.interval = null;
-		this.callback = function(){};
+		this.callback = (callback || function() {});
+		this.interval = (interval || 0);
 	}
 
 	/**
-	 * [start description]
+	 * Start the timer
 	 *
 	 * @method start
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} interval
-	 *
-	 * @return {[type]}
+	 * @param {Function} callback, Optional. Can be given at other places, to be called when the timer is done
+	 * @param {Number} interval of the timer, Optional. Can be given at other places
 	 */
-	Timer.prototype.start = function Timer_start(interval)
-	{
-		if(typeof interval !== 'undefined')
-		{
+	Timer.prototype.start = function Timer_start(callback, interval) {
+		if (typeof callback !== 'undefined') {
+			this.callback = callback;
+		}
+		if (typeof interval !== 'undefined') {
 			this.interval = interval;
 		}
 
@@ -40,76 +40,57 @@ _Intention.module('intention/timer', function()
 	};
 
 	/**
-	 * [stop description]
+	 * Stop the timer
 	 *
 	 * @method stop
-	 *
-	 * @depends [depends]
-	 *
-	 * @return {[type]}
 	 */
-	Timer.prototype.stop = function Timer_stop()
-	{
+	Timer.prototype.stop = function Timer_stop() {
 		clearInterval(this.timer);
 
 		return this;
 	};
 
 	/**
-	 * [setInterval description]
+	 * Set the interval to use.
 	 *
 	 * @method setInterval
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {[type]} interval
+	 * @param {Number} interval of the timer, Optional. Can be given at other places
 	 */
-	Timer.prototype.setInterval = function Timer_setInterval(interval)
-	{
+	Timer.prototype.setInterval = function Timer_setInterval(interval) {
 		this.interval = interval;
 
 		return this;
 	};
 
 	/**
-	 * [setCallback description]
+	 * Set the callback to use when the timer runs out
 	 *
 	 * @method setCallback
 	 *
-	 * @depends [depends]
-	 *
-	 * @param {Function} callback
+	 * @param {Function} callback, Optional. Can be given at other places, to be called when the timer is done
 	 */
-	Timer.prototype.setCallback = function Timer_setCallback(callback)
-	{
+	Timer.prototype.setCallback = function Timer_setCallback(callback) {
 		this.callback = callback;
 
 		return this;
 	};
 
-	// Keeps track of the Timers
-	var _timers = {};
-
 	/**
-	 * [timerFactory description]
+	 * timerFactory Sets up a timer with given key as identifier or retrieves it if the timer already exists with such a key
 	 *
 	 * @method timerFactory
 	 *
-	 * @depends [depends]
+	 * @param {String} key
 	 *
-	 * @param {[type]} key
-	 *
-	 * @return {[type]}
+	 * @return {Timer}
 	 */
-	return function timerFactory(key)
-	{
-		if(typeof key === 'undefined')
-		{
+	return function timerFactory(key) {
+		if (typeof key === 'undefined') {
 			return new Timer();
 		}
 
-		else if(typeof _timers[key] === 'undefined')
-		{
+		else if (typeof _timers[key] === 'undefined') {
 			_timers[key] = new Timer();
 		}
 
